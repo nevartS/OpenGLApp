@@ -38,22 +38,27 @@ static const char* vShader = "											\n\
 																		\n\
 layout (location = 0) in vec3 pos;										\n\
 																		\n\
+out vec4 vColor;														\n\
+																		\n\
 uniform mat4 model;														\n\
 																		\n\
 void main()																\n\
 {																		\n\
 	gl_Position = model * vec4(pos, 1.0);								\n\
+	vColor = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);						\n\
 }";				
 
 // Fragment Shader
 static const char* fShader = "											\n\
 #version 330															\n\
 																		\n\
+in vec4 vColor;															\n\
+																		\n\
 out vec4 colour;				 										\n\
 																		\n\
 void main()																\n\
 {																		\n\
-	colour = vec4(1.0, 0.0, 0.0, 1.0);									\n\
+	colour = vColor;													\n\
 }";
 
 void CreateTriangle()
@@ -254,8 +259,8 @@ int main()
 
 		glm::mat4 model = glm::mat4(1.0f);		
 		//model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate the triangle
-		model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f)); // Translate(move) the triangle							
-		model = glm::scale(model, glm::vec3(currentSize, 0.4f, 1.0f)); // Scale the triangle
+		//model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f)); // Translate(move) the triangle							
+		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f)); // Scale the triangle
 		
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		
