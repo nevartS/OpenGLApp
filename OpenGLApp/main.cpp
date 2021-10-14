@@ -15,7 +15,7 @@ const GLint WIDTH = 800, HEIGHT = 600;
 // For converting the actual angles to the radians
 const float toRadians = 3.14159265f / 180.0f; // Pi / 180 degrees
 
-GLuint VAO, VBO, IBO, shader, uniformModel;
+GLuint VAO, VBO, IBO, shader, uniformModel, uniformProjection;
 
 // Translate Variables
 bool direction = true;
@@ -41,10 +41,11 @@ layout (location = 0) in vec3 pos;										\n\
 out vec4 vColor;														\n\
 																		\n\
 uniform mat4 model;														\n\
+uniform mat4 projection;												\n\
 																		\n\
 void main()																\n\
 {																		\n\
-	gl_Position = model * vec4(pos, 1.0);								\n\
+	gl_Position = projection * model * vec4(pos, 1.0);					\n\
 	vColor = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);						\n\
 }";				
 
@@ -165,6 +166,7 @@ void CompileShaders()
 	}
 
 	uniformModel = glGetUniformLocation(shader, "model");
+	uniformProjection = glGetUniformLocation(shader, "projection");
 }
 
 int main()
@@ -226,6 +228,8 @@ int main()
 	CreateTriangle();
 	CompileShaders();
 
+	glm::mat4 projection = glm::perspective(45.0f, (GLfloat)bufferWidth / (GLfloat)bufferHeight, 0.1f, 100.0f);
+
 	// Loop until window closed
 	while (!glfwWindowShouldClose(mainWindow))
 	{
@@ -274,11 +278,13 @@ int main()
 		glUseProgram(shader);
 
 		glm::mat4 model = glm::mat4(1.0f);		
-		model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate the triangle
-		//model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f)); // Translate(move) the triangle							
+
+		model = glm::translate(model, glm::vec3(triOffset, 0.0f, -2.5f)); // Translate(move) the triangle							
+		//model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f)); // Rotate the triangle		
 		model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f)); // Scale the triangle
 		
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 		
 		glBindVertexArray(VAO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
