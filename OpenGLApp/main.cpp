@@ -11,17 +11,26 @@
 
 // Window dimensions
 const GLint WIDTH = 800, HEIGHT = 600;
+
+// For converting the actual angles to the radians
 const float toRadians = 3.14159265f / 180.0f; // Pi / 180 degrees
 
 GLuint VAO, VBO, shader, uniformModel;
 
-// Variables
+// Translate Variables
 bool direction = true;
 float triOffset = 0.0f;
 float triMaxOffset = 0.5f;  // Offset from the edges
 float triIncrement = 0.005f;  // Triangle positioning speed
-
+ 
+// Rotating Variables
 float currentAngle = 0.0f;
+
+// Scaling Variables
+bool sizeDirection = true;
+float currentSize = 0.4f;
+float maximumSize = 0.8f;
+float minimumSize = 0.1f;
 
 // Vertex Shader
 static const char* vShader = "											\n\
@@ -33,18 +42,18 @@ uniform mat4 model;														\n\
 																		\n\
 void main()																\n\
 {																		\n\
-	gl_Position = model * vec4(pos.x * 0.4f, pos.y * 0.4f, pos.z, 1.0);	\n\
+	gl_Position = model * vec4(pos, 1.0);								\n\
 }";				
 
 // Fragment Shader
-static const char* fShader = "								\n\
-#version 330												\n\
-															\n\
-out vec4 colour;				 							\n\
-															\n\
-void main()													\n\
-{															\n\
-	colour = vec4(1.0, 0.0, 0.0, 1.0);						\n\
+static const char* fShader = "											\n\
+#version 330															\n\
+																		\n\
+out vec4 colour;				 										\n\
+																		\n\
+void main()																\n\
+{																		\n\
+	colour = vec4(1.0, 0.0, 0.0, 1.0);									\n\
 }";
 
 void CreateTriangle()
@@ -223,15 +232,30 @@ int main()
 			currentAngle -= 360;
 		}
 
+		if (sizeDirection)
+		{
+			currentSize += 0.005f;
+		}
+		else
+		{
+			currentSize -= 0.005f;
+		}
+
+		if (currentSize >= maximumSize || currentSize <= minimumSize)
+		{
+			sizeDirection = !sizeDirection;
+		}
+
 		// Clear the window
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glUseProgram(shader);
 
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f));
-		model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));					
+		glm::mat4 model = glm::mat4(1.0f);		
+		//model = glm::rotate(model, currentAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f)); // Rotate the triangle
+		model = glm::translate(model, glm::vec3(triOffset, 0.0f, 0.0f)); // Translate(move) the triangle							
+		model = glm::scale(model, glm::vec3(currentSize, 0.4f, 1.0f)); // Scale the triangle
 		
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		
